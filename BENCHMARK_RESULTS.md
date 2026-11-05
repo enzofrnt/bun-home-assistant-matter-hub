@@ -1,5 +1,7 @@
 # Migration Bun : résultats et comparaison
 
+Les mesures ci-dessous concernent les outils de développement. La vérification complète avec zéro test ignoré est dans [COMPATIBILITY_RESULTS.md](COMPATIBILITY_RESULTS.md), et les mesures du service en fonctionnement dans [RUNTIME_RESULTS.md](RUNTIME_RESULTS.md).
+
 Mesures effectuées le **5 novembre 2026**, sur un **Apple M4 Pro, 14 processeurs logiques, 48 Gio de RAM, macOS 27.2 arm64**. Node **24.19.0**, pnpm **10.33.0**, Bun **1.4.2+43848b5a7**.
 
 La migration exécute les tests existants avec Vitest sous Bun : **2 210 tests réussis, 7 ignorés**, lors des trois passages de comparaison. Les tests, assertions, fixtures, fichiers de préparation, configurations Vitest et délais n'ont pas été modifiés. Le script vérifie leurs empreintes SHA-256.

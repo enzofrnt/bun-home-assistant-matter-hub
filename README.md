@@ -10,7 +10,7 @@ bun run build
 bun run production
 ```
 
-See [the Bun migration notes](BUN_MIGRATION.md) for development, Docker, compatibility and benchmark reproduction. The existing tests have not been edited.
+See [the Bun migration notes](BUN_MIGRATION.md) for development, Docker, compatibility and benchmark reproduction. The existing tests have not been edited. [Complete Bun compatibility](COMPATIBILITY_RESULTS.md): **2,217 passed, zero skipped** on Linux, including opt-in network tests. [Runtime resource comparisons](RUNTIME_BENCHMARK.md) are separate from the build/install measurements.
 
 ---
 

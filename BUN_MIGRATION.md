@@ -78,3 +78,9 @@ Each round alternates Node/Bun order and measures installation, build, then the 
 Wall time, CPU seconds and maximum process RSS come from macOS `/usr/bin/time -l`. The script also samples the sum of RSS across descendants about every 100 ms. This sum can double-count shared pages and miss brief peaks; it is not physical RAM. The result files preserve commands, exit codes, test counts, environment and raw logs. Full-suite time/CPU totals are sums across sequential suites; memory is the maximum observed across suites.
 
 See [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md) for measured results and limitations. Development/build measurements do not establish live Home Assistant throughput, paired Matter behavior, idle memory or Raspberry Pi performance.
+
+## Complete compatibility and runtime validation
+
+The follow-up validation activates `HAMH_LOOPBACK=1` and runs the port-80 checks in an isolated Linux container. All 2,217 repository tests pass with zero skips; see [COMPATIBILITY_RESULTS.md](COMPATIBILITY_RESULTS.md). The test files and Vitest configurations remain identical to upstream.
+
+Production runtime RAM/CPU/API comparisons, including active simulated Matter endpoints, are in [RUNTIME_BENCHMARK.md](RUNTIME_BENCHMARK.md). Those measurements are separate from the development-tool benchmarks above.
