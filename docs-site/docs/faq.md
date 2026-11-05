@@ -98,21 +98,9 @@ See [Temperature & Humidity Sensor](./devices/temperature-humidity-sensor.md) fo
 
 ## The app keeps crashing or restarting on my HA Yellow / Raspberry Pi / VM
 
-Low-resource devices (1-2 GB RAM) or VMs with limited memory allocation can run out of memory. HAMH dynamically sizes the Node.js heap to 50% of the available system memory (clamped between 256 MB and 2048 MB), and the add-on takes a `heap_size_mb` option to override that. The startup log shows the calculated value: `Memory: total=4096MB, available=1024MB, cgroup=noneMB → heap: 512MB`. The total process memory (including matter.js cluster definitions, SQLite, and V8 overhead) can reach 400-600 MB even before bridges start.
+This Bun fork uses JavaScriptCore and manages its heap automatically. The upstream `heap_size_mb` option and V8 `NODE_OPTIONS` heap flags do not apply. Reduce the number of exposed entities, stop memory-heavy add-ons, and monitor actual usage with `docker stats`. Splitting the same entities across more bridges does not reduce the total workload.
 
-The telltale sign of an OOM kill is the log showing `Killed` with no error message or stack trace, this means the Linux kernel terminated the process.
-
-If crashes persist:
-
-1. Reduce the number of devices per bridge
-2. Raise `heap_size_mb` if the machine has the memory or swap for it. Splitting entities across more bridges does not reduce memory, everything runs in one process
-3. Stop other memory-heavy add-ons (Frigate, Whisper, Piper, Music Assistant, Python Matter Server)
-4. For VMs (`qemux86-64`): increase RAM allocation to at least 4 GB
-5. Consider using a device with more RAM
-
-See the [Low-Resource Devices Guide](./guides/low-resource-devices.md) for detailed setup recommendations, and [#190](https://github.com/RiDDiX/home-assistant-matter-hub/issues/190) and [#141](https://github.com/RiDDiX/home-assistant-matter-hub/issues/141) for details.
-
-A crash that ends with `# Fatal error in , line 0`, `# unreachable code` and `Trace/breakpoint trap` is not an OOM kill. The abort happens inside the V8 engine and HAMH cannot catch it; what triggers it is not known yet, and the Alpine-based add-on prints no native stack frames after it. Turn on the add-on's **Watchdog** switch so the Supervisor restarts it automatically, and report it with the log lines from just before the crash, see [#479](https://github.com/RiDDiX/home-assistant-matter-hub/issues/479).
+Check `docker inspect <container> --format '{{.State.OOMKilled}}'` for an OOM kill. For VMs, increase available RAM if the working set exceeds the allocation. See the [Low-Resource Devices Guide](./guides/low-resource-devices.md).
 
 ## Alexa loses connection after a few hours
 

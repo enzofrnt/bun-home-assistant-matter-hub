@@ -5,10 +5,10 @@ inputs:
   dockerfile:
     description: "Location of the Dockerfile to use. Parent directory will be used as context."
     required: true
-  node-version:
-    description: "The node version to include in the dockerfile (default: 22)"
+  bun-version:
+    description: "The Bun version to include in the Dockerfile"
     required: false
-    default: "22"
+    default: "1.4.2"
   package-version:
     description: "The package version to install"
     required: true
@@ -27,15 +27,15 @@ runs:
       id: meta
       shell: bash
       env:
-        DOCKER_IMAGE_BASENAME: ghcr.io/riddix/home-assistant-matter-hub
+        DOCKER_IMAGE_BASENAME: ghcr.io/${{ github.repository }}
       run: |
         CONTEXT=$(dirname "${{inputs.dockerfile}}")
         DOCKER_TYPE=$(basename "${{inputs.dockerfile}}" .Dockerfile)
 
         if [ "$DOCKER_TYPE" = "standalone" ]; then
           DOCKER_IMAGE="${DOCKER_IMAGE_BASENAME}"
-          # Standalone includes arm/v7 for legacy 32-bit ARM devices
-          PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
+          # Bun supports 64-bit x86 and ARM.
+          PLATFORMS="linux/amd64,linux/arm64"
         else
           DOCKER_IMAGE="${DOCKER_IMAGE_BASENAME}-$DOCKER_TYPE"
           # Addon: only amd64+arm64 (HA is dropping armv7)
@@ -54,7 +54,7 @@ runs:
         context: ${{ steps.meta.outputs.context }}
         file: ${{inputs.dockerfile}}
         build-args: |
-          NODE_VERSION=${{ inputs.node-version }}
+          BUN_VERSION=${{ inputs.bun-version }}
           PACKAGE_VERSION=${{ inputs.package-version }}
         tags: |
           ${{ steps.meta.outputs.dockertag }}:${{ inputs.package-version }}

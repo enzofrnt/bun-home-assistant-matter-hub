@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "cleanup": "npx rimraf node_modules dist",
+    "cleanup": "bun x rimraf node_modules dist",
     "dev": "vite",
     "serve": "vite",
     "build": "tsc -b && vite build",

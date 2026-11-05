@@ -1,5 +1,7 @@
 # Testing Features Guide
 
+> Published testing/alpha images below belong to the upstream Node project. To try this Bun fork, build its standalone image locally using the [installation guide](../getting-started/installation.md).
+
 > [!CAUTION]
 > Testing versions are **highly unstable** and intended for developers and testers only!
 > Features may be incomplete, broken, or removed without notice.
@@ -47,8 +49,8 @@ docker run -d \
 git clone https://github.com/RiDDiX/home-assistant-matter-hub.git
 cd home-assistant-matter-hub
 git checkout testing
-pnpm install
-pnpm run build
+bun install --frozen-lockfile
+bun run build
 ```
 
 ---

@@ -33,3 +33,7 @@ tmp/
 
 # Nested repositories
 home-assistant-addons/
+
+# Local benchmark results and Python cache
+benchmark-results/
+__pycache__/

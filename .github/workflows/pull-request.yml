@@ -11,25 +11,25 @@ jobs:
     name: "Verify Code"
     runs-on: ubuntu-latest
     outputs:
-      node-version: ${{ steps.setup.outputs.node-version }}
+      bun-version: ${{ steps.setup.outputs.bun-version }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Environment
-        uses: ./.github/actions/setup-node
+        uses: ./.github/actions/setup-bun
         id: setup
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint
+        run: bun run lint
       - name: Test
-        run: pnpm run test
+        run: bun run test
       - name: Build
-        run: pnpm run build
+        run: bun run build
 
       - name: Package Artifact
         uses: actions/upload-artifact@v6

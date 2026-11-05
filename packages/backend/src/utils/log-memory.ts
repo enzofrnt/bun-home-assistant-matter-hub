@@ -23,7 +23,7 @@ export function logMemoryUsage(log: Logger, context: string): void {
 }
 
 /**
- * Check if the V8 heap is under memory pressure.
+ * Check runtime-reported heap pressure through the node:v8 compatibility API.
  * Returns true when heap usage exceeds 85% of the configured heap limit.
  * Used to stop loading more endpoints before hitting an OOM crash.
  */
@@ -51,7 +51,7 @@ export function logStartupMemoryGuard(log: Logger): void {
   if (freeMB < LOW_MEMORY_THRESHOLD_MB) {
     log.warn(
       `Low memory detected (${freeMB} MB free). ` +
-        "HAMH typically needs 400-600 MB. " +
+        "The hub may need more memory for its Matter endpoints. " +
         "Consider reducing the number of entities per bridge, " +
         "stopping memory-heavy add-ons, or increasing available RAM. " +
         "See the FAQ section 'The app keeps crashing or restarting' for details.",

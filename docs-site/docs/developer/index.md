@@ -19,7 +19,7 @@ This documentation is intended for developers taking over or contributing to the
 ## Technologies Used
 
 - **TypeScript**: Main language for backend, frontend, and shared logic.
-- **Node.js**: Runtime for backend services and CLI.
+- **Bun 1.4.2**: Runtime, package manager and script runner for backend services, CLI and development tools.
 - **Express**: REST API for bridge management.
 - **Vite**: Frontend build tool.
 - **React**: Frontend UI framework.
@@ -37,7 +37,7 @@ This documentation is intended for developers taking over or contributing to the
 - **Backend** (`packages/backend`): Implements bridge logic, Matter protocol, Home Assistant integration, and exposes REST API.
 - **Frontend** (`packages/frontend`): UI for managing bridges and devices.
 - **Common** (`packages/common`): Shared types and utilities.
-- **Docs** (`packages/docs`): Documentation and guides.
+- **Docs** (`docs-site`): Documentation and guides.
 
 ### Key Backend Components
 
@@ -133,9 +133,9 @@ The `@matter/*` packages are pinned to a specific version in `packages/backend/p
 3. Update all three packages together: `@matter/general`, `@matter/main`, `@matter/nodejs`.
 4. Run the full validation sequence:
    ```bash
-   pnpm run lint
-   pnpm run build
-   pnpm run test
+   bun run lint
+   bun run build
+   bun run test
    ```
 5. Test pairing with at least one controller (Apple Home, Google Home, or Alexa).
 6. Test composed devices (temperature + humidity + pressure sensor grouping).
@@ -144,7 +144,7 @@ The `@matter/*` packages are pinned to a specific version in `packages/backend/p
 9. Test session cleanup (verify stale sessions are closed when a new CASE session opens for the same peer).
 10. Build Docker image and verify it starts correctly:
     ```bash
-    docker build -f apps/home-assistant-matter-hub/Dockerfile -t hamh-test .
+    docker build -f apps/home-assistant-matter-hub/standalone.Dockerfile -t hamh-test apps/home-assistant-matter-hub
     ```
 
 ### Known Internal API Dependencies

@@ -1,11 +1,13 @@
 # Installation
 
+> This Bun fork has not published an add-on or container image. Use the local Docker build or Bun source installation below. The upstream add-on instructions install the original Node version.
+
 This application can be installed in different ways:
 
-1. Home-Assistant AddOn for Home Assistant OS (preferred)
+1. Upstream Home Assistant Add-on for Home Assistant OS
 2. Manual Deployment
    1. Ready to use Docker Image
-   2. Manual installation using `npm`
+   2. Manual installation using Bun
    3. Configuration options
 
 > [!WARNING]
@@ -41,12 +43,19 @@ Simply add the following GitHub Repository URL to your Home Assistant AddOn Stor
 > Make sure your docker installation has IPv6 enabled, too.
 > See [this guide](https://fariszr.com/docker-ipv6-setup-with-propagation/) for more information.
 
-This repository builds a docker image for every release. You can simply run it by using `docker-compose`:
+Build this fork locally before using Docker Compose:
+
+```bash
+bun install --frozen-lockfile
+bun run build
+docker build -f apps/home-assistant-matter-hub/standalone.Dockerfile \
+  -t bun-home-assistant-matter-hub:local apps/home-assistant-matter-hub
+```
 
 ```yaml
 services:
   matter-hub:
-    image: ghcr.io/riddix/home-assistant-matter-hub:latest
+    image: bun-home-assistant-matter-hub:local
     restart: unless-stopped
     network_mode: host
     environment: # more options can be found in the configuration section
@@ -81,25 +90,28 @@ docker run -d \
   -v $PWD/home-assistant-matter-hub:/data \
   # required due to restrictions in matter
   --network=host \
-  ghcr.io/riddix/home-assistant-matter-hub:latest
+  bun-home-assistant-matter-hub:local
 ```
 
 See 2.3 for more configuration options.
 
 Now you can go ahead and follow the [bridge configuration guide](./bridge-configuration.md).
 
-### 2.2 Manual installation using `npm`
+### 2.2 Manual installation using Bun
 
-If you want to install this application by hand, you simply need to run
+To build and run this Bun fork from source, install Bun 1.4.2 and run
 
 ```bash
-npm install -g home-assistant-matter-hub
+git clone https://github.com/enzofrnt/bun-home-assistant-matter-hub.git
+cd bun-home-assistant-matter-hub
+bun install --frozen-lockfile
+bun run build
 ```
 
 To start the application, run
 
 ```bash
-home-assistant-matter-hub start \
+bun apps/home-assistant-matter-hub/dist/backend/cli.js start \
   # required: the address of your home assistant instance
   # can be replaced with an environment variable: HAMH_HOME_ASSISTANT_URL
   --home-assistant-url="http://192.168.178.123:8123/" \

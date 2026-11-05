@@ -1,18 +1,12 @@
-ARG NODE_VERSION="24"
+ARG BUN_VERSION="1.4.2"
 
-FROM node:${NODE_VERSION}-alpine AS nodebuild
+FROM oven/bun:${BUN_VERSION}-alpine AS bunbuild
 
 FROM ghcr.io/hassio-addons/base:18.2.1
 
-# Install Node.js
-RUN apk add --no-cache libstdc++ bash
-COPY --from=nodebuild /usr/local/bin/node /usr/local/bin/
-COPY --from=nodebuild /usr/local/lib/node_modules /usr/local/lib/node_modules
-RUN \
-    ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
-    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
-    ln -s ../lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack
-RUN corepack enable
+# Copy the musl build so the runtime matches the Alpine-based add-on.
+RUN apk add --no-cache libstdc++ libgcc bash
+COPY --from=bunbuild /usr/local/bin/bun /usr/local/bin/bun
 
 ENV SUPERVISOR_TOKEN=""
 VOLUME /config
@@ -30,9 +24,7 @@ LABEL \
 RUN mkdir /install
 COPY package.tgz /install/package.tgz
 # Install the tarball inside a wrapper project so its "overrides" field
-# actually applies during resolution. `npm install -g <tgz>` ignores
-# transitive overrides, which leaves vulnerable minimatch/path-to-regexp
-# copies in place. The wrapper project plus a symlinked bin avoids that.
+# applies at the project root, including transitive dependencies.
 RUN printf '%s\n' \
       '{' \
       '  "name": "hamh-wrapper",' \
@@ -48,7 +40,7 @@ RUN printf '%s\n' \
       '  }' \
       '}' > /install/package.json \
  && cd /install \
- && npm install --omit=dev --no-audit --no-fund \
+ && bun install --production \
  && ln -s /install/node_modules/.bin/home-assistant-matter-hub /usr/local/bin/home-assistant-matter-hub \
  && rm /install/package.tgz
 

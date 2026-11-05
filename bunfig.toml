@@ -1,0 +1,6 @@
+[run]
+# Run existing tools (including Vitest workers) with Bun rather than Node.
+bun = true
+
+[install]
+linker = "isolated"

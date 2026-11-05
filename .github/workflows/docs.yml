@@ -27,17 +27,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24.x
+      - uses: ./.github/actions/setup-bun
 
       - name: Install dependencies
         working-directory: docs-site
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Build Docusaurus
         working-directory: docs-site
-        run: npm run build
+        run: bun --bun run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

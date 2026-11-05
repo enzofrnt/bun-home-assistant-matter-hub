@@ -30,18 +30,17 @@
     "smart-home"
   ],
   "bugs": {
-    "url": "https://github.com/riddix/home-assistant-matter-hub/issues"
+    "url": "https://github.com/enzofrnt/bun-home-assistant-matter-hub/issues"
   },
   "license": "Apache-2.0",
-  "repository": "github:riddix/home-assistant-matter-hub",
+  "repository": "github:enzofrnt/bun-home-assistant-matter-hub",
   "scripts": {
-    "cleanup": "npx rimraf node_modules dist pack LICENSE README.md",
-    "build": "node build.js",
-    "bundle": "pnpm pack --out package.tgz",
-    "postbuild": "pnpm run bundle",
+    "cleanup": "bun x rimraf node_modules dist pack LICENSE README.md",
+    "build": "bun build.js",
+    "bundle": "bun pm pack --filename \"$(pwd)/package.tgz\"",
+    "postbuild": "bun run bundle",
     "test": "vitest run",
-    "prestart": "pnpm run build",
-    "start": "dotenvx run -f ../../.env -- ./dist/backend/cli.js start"
+    "start": "bun --env-file=../../.env ./dist/backend/cli.js start"
   },
   "dependencies": {
     "@matter/main": "0.18.0",
@@ -107,5 +106,8 @@
         ]
       }
     }
+  },
+  "engines": {
+    "bun": ">=1.4.2"
   }
 }

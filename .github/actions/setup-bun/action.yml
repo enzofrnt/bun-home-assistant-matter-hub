@@ -1,0 +1,16 @@
+name: Setup Environment
+description: Setup the pinned Bun environment
+
+outputs:
+  bun-version:
+    description: The installed Bun version
+    value: ${{ steps.setup.outputs.bun-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      id: setup
+      with:
+        bun-version: 1.4.2

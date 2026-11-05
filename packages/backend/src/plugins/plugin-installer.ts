@@ -36,7 +36,7 @@ export class PluginInstaller {
     if (!fs.existsSync(this.pluginDir)) {
       fs.mkdirSync(this.pluginDir, { recursive: true });
     }
-    // Ensure a package.json exists so npm install works
+    // Ensure a package.json exists so bun add works
     const pkgJson = path.join(this.pluginDir, "package.json");
     if (!fs.existsSync(pkgJson)) {
       fs.writeFileSync(
@@ -68,8 +68,8 @@ export class PluginInstaller {
 
     return new Promise((resolve) => {
       execFile(
-        "npm",
-        ["install", packageName, "--save"],
+        "bun",
+        ["add", packageName],
         {
           cwd: this.pluginDir,
           timeout: 120_000,
@@ -115,8 +115,8 @@ export class PluginInstaller {
 
     return new Promise((resolve) => {
       execFile(
-        "npm",
-        ["uninstall", packageName, "--save"],
+        "bun",
+        ["remove", packageName],
         {
           cwd: this.pluginDir,
           timeout: 60_000,
@@ -175,7 +175,7 @@ export class PluginInstaller {
       // Snapshot deps before install to detect what was added
       const depsBefore = new Set(Object.keys(this.readDeps()));
 
-      const result = await this.installFromNpm(tgzPath);
+      const result = await this.installPackage(tgzPath);
       if (!result.success) return result;
 
       // Find the newly added package by diffing deps
@@ -204,11 +204,11 @@ export class PluginInstaller {
     }
   }
 
-  private installFromNpm(target: string): Promise<InstallResult> {
+  private installPackage(target: string): Promise<InstallResult> {
     return new Promise((resolve) => {
       execFile(
-        "npm",
-        ["install", target, "--save"],
+        "bun",
+        ["add", target],
         {
           cwd: this.pluginDir,
           timeout: 120_000,

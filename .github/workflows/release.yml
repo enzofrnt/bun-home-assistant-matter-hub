@@ -26,10 +26,11 @@ jobs:
       packages: write
       id-token: write
       issues: write
+    if: github.repository == 'RiDDiX/home-assistant-matter-hub'
     name: Perform NPM Release
     runs-on: ubuntu-latest
     outputs:
-      node-version: ${{ steps.setup.outputs.node-version }}
+      bun-version: ${{ steps.setup.outputs.bun-version }}
       release-version: ${{ steps.release.outputs.release-version }}
       release-channel: ${{ steps.release.outputs.release-channel }}
     steps:
@@ -39,22 +40,22 @@ jobs:
 
       - name: Setup Environment
         id: setup
-        uses: ./.github/actions/setup-node
+        uses: ./.github/actions/setup-bun
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint
+        run: bun run lint
       - name: Test
-        run: pnpm run test
+        run: bun run test
 
       - name: Prepare Manual Version
         if: github.event.inputs.version != ''
-        run: pnpm run release:version ${{ github.event.inputs.version }}
+        run: bun run release:version ${{ github.event.inputs.version }}
 
       - name: Build
-        run: pnpm run build
+        run: bun run build
         env:
           BASE_URL: /home-assistant-matter-hub
           APP_VERSION: ${{ github.event.inputs.version || '' }}
@@ -62,7 +63,7 @@ jobs:
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm run release
+        run: bun run release
 
       - name: Analyze Release
         id: release
@@ -156,7 +157,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Environment
-        uses: ./.github/actions/setup-node
+        uses: ./.github/actions/setup-bun
 
       - name: Download Package
         uses: actions/download-artifact@v7
@@ -169,7 +170,7 @@ jobs:
         run: |
           cd apps/home-assistant-matter-hub
           mkdir -p repack && tar xzf package.tgz -C repack
-          node -e "
+          bun -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('repack/package/package.json','utf8'));
             pkg.name = '@riddix/hamh';
@@ -181,8 +182,8 @@ jobs:
 
       - name: Publish to npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm publish apps/home-assistant-matter-hub/package-npm.tgz --provenance --no-git-checks --access public --tag ${{ needs.release.outputs.release-channel }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish apps/home-assistant-matter-hub/package-npm.tgz --access public --tag ${{ needs.release.outputs.release-channel }}
 
   dispatch-addon:
     name: "Dispatch Addon Repository"

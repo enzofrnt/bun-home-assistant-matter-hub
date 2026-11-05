@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "cleanup": "npx rimraf node_modules dist",
+    "cleanup": "bun x rimraf node_modules dist",
     "build": "tsc",
     "test": "vitest run"
   },

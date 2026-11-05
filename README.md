@@ -1,3 +1,19 @@
+# Bun Home Assistant Matter Hub
+
+This fork runs the development tools, unchanged Vitest suites, backend, documentation and Docker images with **Bun 1.4.2**. The original project and its release history follow below.
+
+```bash
+bun install --frozen-lockfile
+bun run test
+bun run build
+# Set HAMH_HOME_ASSISTANT_URL and HAMH_HOME_ASSISTANT_ACCESS_TOKEN first:
+bun run production
+```
+
+See [the Bun migration notes](BUN_MIGRATION.md) for development, Docker, compatibility and benchmark reproduction. The existing tests have not been edited.
+
+---
+
 <div align="center">
 
 # Home-Assistant-Matter-Hub

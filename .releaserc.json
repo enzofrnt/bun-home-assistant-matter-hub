@@ -42,7 +42,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "pnpm run release:version ${nextRelease.version} && APP_VERSION=${nextRelease.version} pnpm run build && APP_VERSION=${nextRelease.version} pnpm run release:pack"
+        "prepareCmd": "bun run release:version ${nextRelease.version} && APP_VERSION=${nextRelease.version} bun run build && APP_VERSION=${nextRelease.version} bun run release:pack"
       }
     ],
     [

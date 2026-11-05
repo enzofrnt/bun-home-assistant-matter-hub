@@ -3,63 +3,35 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "bun@1.4.2",
   "engines": {
-    "node": "24"
+    "bun": ">=1.4.2"
   },
   "scripts": {
-    "cleanup": "pnpm -r run cleanup && pnpm run cleanup:root",
-    "cleanup:root": "npx rimraf node_modules",
+    "cleanup": "bun run --workspaces --if-present cleanup && bun run cleanup:root",
+    "cleanup:root": "bun x rimraf node_modules",
     "lint": "biome check",
     "lint:fix": "biome check --write",
-    "pretest": "pnpm run build:minimum",
-    "test": "pnpm -r run test",
-    "build": "pnpm -r run build",
-    "build:minimum": "pnpm --filter @home-assistant-matter-hub/common run build",
-    "build:app": "pnpm --filter './packages/*' run build",
-    "preserve": "pnpm run build:minimum",
-    "serve": "pnpm -r --parallel run serve",
-    "start": "pnpm run serve",
-    "preproduction": "pnpm run build:app",
-    "production": "pnpm --filter home-assistant-matter-hub run start",
-    "check-updates": "npx npm-check-updates --workspaces --root -u",
+    "pretest": "bun run build:minimum",
+    "test": "bun run --workspaces --if-present test",
+    "build": "bun run --workspaces --if-present build",
+    "build:minimum": "bun run --filter @home-assistant-matter-hub/common build",
+    "build:app": "bun run --filter './packages/*' build",
+    "preserve": "bun run build:minimum",
+    "serve": "bun run --workspaces --if-present --parallel serve",
+    "start": "bun run serve",
+    "preproduction": "bun run build:app",
+    "production": "bun run --filter home-assistant-matter-hub build && bun run --filter home-assistant-matter-hub start",
+    "check-updates": "bun x --bun npm-check-updates --workspaces --root -u",
     "release": "semantic-release",
-    "release:version": "pnpm version --workspaces --no-workspaces-update --no-git-tag-version --allow-same-version",
-    "release:pack": "pnpm --filter home-assistant-matter-hub run bundle",
-    "release:publish": "pnpm publish apps/home-assistant-matter-hub/package.tgz --provenance --no-git-checks --access public --loglevel verbose --tag ${CHANNEL:-latest}"
+    "release:version": "bun scripts/release-version.ts",
+    "release:pack": "bun run --filter home-assistant-matter-hub bundle",
+    "release:publish": "bun publish apps/home-assistant-matter-hub/package.tgz --access public --tag ${CHANNEL:-latest}"
   },
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "docs"
+    "packages/*"
   ],
-  "pnpm": {
-    "overrides": {
-      "path-to-regexp@<8.4.0": "^8.4.0",
-      "minimatch@<5.1.8": "5.1.8",
-      "minimatch@<9.0.7": "9.0.7",
-      "minimatch@>=10.0.0 <10.2.3": "10.2.3",
-      "rollup@<4.59.0": "^4.59.0",
-      "undici@<6.24.0": "^6.24.0",
-      "undici@>=7.0.0 <7.29.1": "^7.29.1",
-      "handlebars@<4.7.9": "^4.7.9",
-      "picomatch@<2.3.2": "^2.3.2",
-      "picomatch@>=4.0.0 <4.0.4": "^4.0.4",
-      "yaml@>=2.0.0 <2.8.3": "^2.8.3",
-      "yaml@<2.0.0": "^1.10.3",
-      "@codemirror/state": "6.6.0",
-      "brace-expansion@>=4.0.0 <5.0.9": "^5.0.9",
-      "fast-uri@<3.1.8": "^3.1.8",
-      "qs@<6.16.0": "^6.16.0",
-      "markdown-it@<14.3.1": "^14.3.1",
-      "esbuild@<0.28.1": "^0.28.1",
-      "js-yaml@<4.3.1": "^4.3.1",
-      "@babel/core@<7.29.6": "^7.29.6",
-      "postcss@<8.5.23": "^8.5.23",
-      "browserslist@<4.28.7": "^4.28.7",
-      "baseline-browser-mapping@<2.11.0": "^2.11.0"
-    }
-  },
   "devDependencies": {
     "@biomejs/biome": "2.4.3",
     "@dotenvx/dotenvx": "^1.61.1",
@@ -83,5 +55,38 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vitest": "^4.1.11"
-  }
+  },
+  "overrides": {
+    "path-to-regexp@<8.4.0": "^8.4.0",
+    "minimatch@<5.1.8": "5.1.8",
+    "minimatch@<9.0.7": "9.0.7",
+    "minimatch@>=10.0.0 <10.2.3": "10.2.3",
+    "rollup@<4.59.0": "^4.59.0",
+    "undici@<6.24.0": "^6.24.0",
+    "undici@>=7.0.0 <7.29.1": "^7.29.1",
+    "handlebars@<4.7.9": "^4.7.9",
+    "picomatch@<2.3.2": "^2.3.2",
+    "picomatch@>=4.0.0 <4.0.4": "^4.0.4",
+    "yaml@>=2.0.0 <2.8.3": "^2.8.3",
+    "yaml@<2.0.0": "^1.10.3",
+    "@codemirror/state": "6.6.0",
+    "brace-expansion@>=4.0.0 <5.0.9": "^5.0.9",
+    "fast-uri@<3.1.8": "^3.1.8",
+    "qs@<6.16.0": "^6.16.0",
+    "markdown-it@<14.3.1": "^14.3.1",
+    "esbuild@<0.28.1": "^0.28.1",
+    "js-yaml@<4.3.1": "^4.3.1",
+    "@babel/core@<7.29.6": "^7.29.6",
+    "postcss@<8.5.23": "^8.5.23",
+    "browserslist@<4.28.7": "^4.28.7",
+    "baseline-browser-mapping@<2.11.0": "^2.11.0",
+    "brace-expansion@>=1.0.0 <=1.1.11": "1.1.12",
+    "brace-expansion@>=2.0.0 <=2.0.1": "2.0.2",
+    "form-data@>=4.0.0 <4.0.4": "4.0.4",
+    "tmp@<=0.2.3": "0.2.4",
+    "vite@<7.0.0": "^7.0.0"
+  },
+  "trustedDependencies": [
+    "@swc/core"
+  ]
 }

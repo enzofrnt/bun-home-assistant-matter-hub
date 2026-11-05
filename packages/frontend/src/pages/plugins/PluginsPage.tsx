@@ -735,7 +735,7 @@ export const PluginsPage = () => {
                 }}
               />
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                The plugin will be installed via npm. After installation,
+                The plugin will be installed with Bun. After installation,
                 restart the bridge to load the plugin.
               </Typography>
             </>

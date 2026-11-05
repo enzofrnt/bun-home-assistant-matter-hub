@@ -18,7 +18,10 @@ async function buildBackend() {
   process.stdout.write("Building Backend... ");
   await esbuild.build({
     bundle: true,
-    entryPoints: [path.resolve(src, "cli.ts")],
+    entryPoints: [
+      path.resolve(src, "cli.ts"),
+      path.resolve(src, "cli-main.ts"),
+    ],
     platform: "node",
     outdir: path.resolve(dist),
     treeShaking: true,
@@ -27,18 +30,10 @@ async function buildBackend() {
     minify: false,
     sourcemap: "linked",
     plugins: [
-      stubBunImports(),
-      externalizeAllPackagesExcept([
-        "@home-assistant-matter-hub/common",
-        "@matter/general",
-        "@matter/main",
-        "@matter/model",
-        "@matter/node",
-        "@matter/nodejs",
-        "@matter/protocol",
-        "@matter/types",
-      ]),
-      doNotBundleFile(src, ["bootstrap.js"]),
+      // Leave runtime libraries intact so their conditional exports and
+      // transitive dependencies resolve inside their own package trees.
+      externalizeAllPackagesExcept(["@home-assistant-matter-hub/common"]),
+      doNotBundleFile(src, ["bootstrap.js", "cli-main.js"]),
     ],
   });
 
@@ -58,7 +53,7 @@ function doNotBundleFile(sourcesRoot, files) {
     name: "doNotBundleFile",
     setup(build) {
       build.onResolve({ filter: /^\..*$/ }, (args) => {
-        if (args.kind !== "import-statement" || !args.path.startsWith(".")) {
+        if (!args.path.startsWith(".")) {
           return;
         }
         const filePath = path.resolve(args.resolveDir, args.path);
@@ -67,25 +62,6 @@ function doNotBundleFile(sourcesRoot, files) {
           return;
         }
         return { path: args.path, external: true };
-      });
-    },
-  };
-}
-
-function stubBunImports() {
-  return {
-    name: "stubBunImports",
-    setup(build) {
-      // Stub out bun: protocol imports with empty modules
-      build.onResolve({ filter: /^bun(:|$)/ }, (args) => {
-        return { path: args.path, namespace: "bun-stub" };
-      });
-      build.onLoad({ filter: /.*/, namespace: "bun-stub" }, () => {
-        return {
-          contents:
-            "export default {}; export const Database = class {}; export const constants = {};",
-          loader: "js",
-        };
       });
     },
   };

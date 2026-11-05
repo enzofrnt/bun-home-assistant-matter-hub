@@ -1,157 +1,27 @@
 # Running on Low-Resource Devices
 
-This guide covers setup recommendations for Raspberry Pi (especially 2-4 GB models), Home Assistant Yellow, and VMs with limited RAM.
+This fork uses Bun and JavaScriptCore. Memory estimates from the upstream Node/V8 version do not describe this runtime. Measure the workload on your target device before selecting a memory limit.
 
-## Memory Requirements
+## Runtime and architecture
 
-HAMH loads Matter.js cluster definitions, the Home Assistant entity registry, and V8 runtime overhead at startup. Typical memory usage:
+The Docker images target Linux amd64 and arm64. Bun does not support 32-bit ARM, so arm/v7 images are not built.
 
-| Phase | Estimated Usage |
-|---|---|
-| Node.js + Matter.js cluster definitions | 200-300 MB |
-| Home Assistant registry (entities, devices, states) | 50-150 MB (scales with entity count) |
-| Per Matter endpoint | 1-3 MB each |
-| **Typical steady state (moderate install)** | **400-600 MB** |
+Bun manages its JavaScript heap automatically. The upstream `heap_size_mb` add-on setting and V8's `NODE_OPTIONS=--max-old-space-size=...` do not control Bun's heap. The add-on logs when the legacy setting is ignored.
 
-### Dynamic Heap Sizing
+## Reducing memory usage
 
-HAMH automatically sizes the Node.js heap to **50% of available system memory**, clamped between 256 MB and 2048 MB. The calculated value is logged at startup:
+Expose only the entities you need and stop other memory-heavy add-ons. Splitting the same entities across several bridges adds Matter nodes in the same process and does not reduce the total entity count.
 
-```
-Memory: total=4096MB, available=3200MB, cgroup=noneMB -> heap: 1600MB
-```
+Use container memory limits to bound total process memory and monitor the result under your normal workload. A limit below the application's working set can cause an OOM kill.
 
-On a 2 GB system with about 1 GB free this gives ~512 MB of heap, tight for large bridge configurations.
-
-## Recommended Configuration by RAM
-
-### 2 GB (Raspberry Pi 4 2GB, small VMs)
-
-- Limit bridges to **1-2 bridges** with **50 or fewer entities total**
-- Disable `autoComposedDevices` unless needed
-- Stop other memory-heavy add-ons (see below)
-- Enable swap (see [Swap Configuration](#swap-configuration))
-
-### 4 GB (Raspberry Pi 4/5 4GB, HA Yellow)
-
-- Works well with **2-4 bridges** and **100-200 entities**
-- Monitor the startup log for "Memory pressure detected" warnings
-- Swap recommended but not required
-
-### 8 GB+
-
-- No special configuration needed
-
-## Reducing Memory Usage
-
-### 1. Reduce entities per bridge
-
-Each Matter endpoint uses 1-3 MB of memory. Fewer entities = less memory. Splitting the same entities across several bridges does not help here: all bridges run in one process, and each one adds its own Matter node on top. What counts is the total number of exposed entities.
-
-### 2. Stop memory-heavy add-ons
-
-These add-ons can consume significant RAM alongside HAMH:
-
-- **Frigate** (video processing)
-- **Whisper** (speech-to-text)
-- **Piper** (text-to-speech)
-- **Music Assistant**
-- **Python Matter Server** (not needed when using HAMH)
-
-### 3. Override the heap size
-
-If the automatic calculation is too low or too high, override it:
-
-**Home Assistant Add-on:** set the `heap_size_mb` option (0 keeps the automatic sizing):
-
-```yaml
-heap_size_mb: 1024
-```
-
-A value above the free memory of the machine only works if there is swap to back it.
-
-**Standalone Docker:**
+## Monitoring and diagnosing OOM kills
 
 ```bash
-docker run -e NODE_OPTIONS="--max-old-space-size=768" ghcr.io/riddix/home-assistant-matter-hub
-```
-
-**npm (direct install):**
-
-```bash
-NODE_OPTIONS="--max-old-space-size=768" home-assistant-matter-hub start
-```
-
-## Swap Configuration
-
-On systems with 2-4 GB RAM, enabling swap provides a safety net against OOM kills. Swap is slower than RAM but prevents the Linux kernel from terminating the process.
-
-### Checking current swap
-
-```bash
-free -h
-```
-
-### Adding swap on Raspberry Pi OS
-
-```bash
-sudo dphys-swapfile swapoff
-sudo sed -i 's/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
-sudo dphys-swapfile setup
-sudo dphys-swapfile swapon
-```
-
-### Adding swap on Home Assistant OS
-
-Home Assistant OS manages swap automatically. If you are running out of memory, increasing RAM (via hardware upgrade or VM settings) is the recommended path.
-
-## Diagnosing OOM Kills
-
-### Symptoms
-
-- The add-on/container restarts without any error message or stack trace
-- Logs show `Killed` as the last line
-- `docker inspect` shows `OOMKilled: true` or exit code `137`
-
-### Checking for OOM events
-
-```bash
-# Check container status
-docker inspect <container> | grep -A5 '"State"'
-
-# Check kernel logs for OOM events
-dmesg | grep -i "oom\|killed"
-journalctl -k | grep -i "oom\|killed"
-```
-
-### Startup memory guard
-
-HAMH logs system memory information at startup. If free memory is below 512 MB, a warning is shown:
-
-```
-WARN: Low memory detected (384 MB free). HAMH typically needs 400-600 MB.
-Consider reducing the number of entities per bridge, stopping memory-heavy
-add-ons, or increasing available RAM.
-```
-
-## Monitoring Memory Usage
-
-### From the host
-
-```bash
-# Live container memory usage
 docker stats <container>
-
-# Peak memory since last restart
-docker inspect <container> --format='{{.HostConfig.Memory}}'
+docker inspect <container> --format '{{.State.OOMKilled}}'
+dmesg | grep -i 'oom\|killed'
 ```
 
-### From HAMH logs
+`docker stats` reports live container use. `HostConfig.Memory` is the configured limit, not the observed peak. A log ending in `Killed`, exit code 137 or `OOMKilled: true` can indicate a kernel OOM kill.
 
-HAMH logs heap usage at debug level during key operations. Set the log level to `debug` temporarily to see these entries:
-
-```
-Memory [after HA registry load]: heap 180/256 MB, rss 320 MB
-```
-
-If heap usage is consistently above 80% of the limit, consider reducing entities or increasing the heap size.
+The repository includes a macOS comparison harness in `scripts/benchmark.py`. It measures development workloads; its results do not predict the memory usage of a live Home Assistant bridge or a Raspberry Pi.
